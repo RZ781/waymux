@@ -1,0 +1,5 @@
+#!/bin/bash
+
+wayland-scanner server-header </usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml > include/xdg_shell.h &&
+wayland-scanner private-code </usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml > src/xdg_shell.c &&
+gcc -Wall -Wextra -Wpedantic -Iinclude src/*.c -o waymux -lwayland-server -g
