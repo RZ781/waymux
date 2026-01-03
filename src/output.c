@@ -18,6 +18,6 @@ void bind_output(struct wl_client* wl_client, void* data, uint32_t version, uint
 	client->wl_output = wl_output;
 	wl_resource_set_implementation(wl_output, &output_implementation, NULL, NULL);
 	wl_output_send_geometry(wl_output, 0, 0, 1000, 1000, WL_OUTPUT_SUBPIXEL_UNKNOWN, "John Make", "John Model", WL_OUTPUT_TRANSFORM_NORMAL);
-	wl_output_send_mode(wl_output, WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED, WIDTH, HEIGHT, 60);
+	wl_output_send_mode(wl_output, WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED, display->fb_width, display->fb_height, 60);
 	wl_output_send_done(wl_output);
 }

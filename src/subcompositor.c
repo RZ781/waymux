@@ -10,6 +10,9 @@ void subcompositor_get_subsurface(struct wl_client* wl_client, struct wl_resourc
 	(void) wl_subcompositor; (void) wl_surface; (void) parent;
 	struct wl_resource* wl_subsurface = wl_resource_create(wl_client, &wl_subsurface_interface, wl_subsurface_interface.version, id);
 	Surface* surface = wl_resource_get_user_data(wl_surface);
+	surface->parent = wl_resource_get_user_data(parent);
+	surface->x = surface->parent->x - surface->parent->state.geo_x;
+	surface->y = surface->parent->y - surface->parent->state.geo_y;
 	wl_resource_set_implementation(wl_subsurface, &subsurface_implementation, surface, NULL);
 }
 

@@ -4,9 +4,6 @@
 #include <wayland-server.h>
 #include "xdg_shell.h"
 
-#define WIDTH 100
-#define HEIGHT 80
-
 typedef struct {
 	struct wl_client* wl_client;
 	struct wl_resource* wl_output;
@@ -16,6 +13,11 @@ typedef struct {
 typedef struct {
 	struct wl_display* wl_display;
 	struct wl_list clients;
+	uint8_t* framebuffer;
+	int fb_width;
+	int fb_height;
+	int fb_bytes;
+	int y;
 } Display;
 
 typedef struct {
@@ -24,12 +26,26 @@ typedef struct {
 } Compositor;
 
 typedef struct {
+	int32_t geo_x;
+	int32_t geo_y;
+	int32_t geo_width;
+	int32_t geo_height;
+} SurfaceState;
+
+typedef struct Surface Surface;
+
+struct Surface {
+	int x;
+	int y;
 	struct wl_resource* wl_surface;
 	struct wl_resource* xdg_surface;
 	struct wl_resource* xdg_toplevel;
-	Display* display;
 	struct wl_resource* wl_buffer;
-} Surface;
+	Display* display;
+	SurfaceState pending_state;
+	SurfaceState state;
+	Surface* parent;
+};
 
 extern const struct wl_surface_interface surface_implementation;
 extern const struct xdg_surface_interface xdg_surface_implementation;

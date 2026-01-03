@@ -5,6 +5,12 @@
 #include "xdg_shell.h"
 #include "waymux.h"
 
+#include <linux/fb.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+
 // TODO: client destructor
 // TODO: change ints to int32_ts
 
@@ -16,15 +22,8 @@ void Display_init(Display* display) {
 		exit(-1);
 	}
 	display->wl_display = wl_display;
+	display->y = 0;
 	wl_list_init(&display->clients);
-	// set up shared memory
-	wl_display_add_shm_format(wl_display, WL_SHM_FORMAT_XRGB2101010);
-	wl_display_add_shm_format(wl_display, WL_SHM_FORMAT_XBGR2101010);
-	wl_display_add_shm_format(wl_display, WL_SHM_FORMAT_RGBX1010102);
-	wl_display_add_shm_format(wl_display, WL_SHM_FORMAT_BGRX1010102);
-	wl_display_add_shm_format(wl_display, WL_SHM_FORMAT_ARGB2101010);
-	wl_display_add_shm_format(wl_display, WL_SHM_FORMAT_ABGR2101010);
-	wl_display_add_shm_format(wl_display, WL_SHM_FORMAT_RGBA1010102);
 	wl_display_init_shm(wl_display);
 	// create global singletons
 	wl_global_create(wl_display, &wl_compositor_interface, wl_compositor_interface.version, display, bind_compositor);
@@ -61,8 +60,19 @@ void Client_init(Client* client, struct wl_client* wl_client) {
 }
 
 int main() {
+	int fbfd = open("/dev/fb0", O_RDWR);
+	if (fbfd == -1) {
+		perror("failed to open framebuffer");
+		exit(-1);
+	}
+	struct fb_var_screeninfo vinfo;
+	ioctl(fbfd, FBIOGET_VSCREENINFO, &vinfo);
 	Display display;
 	Display_init(&display);
+	display.fb_width = vinfo.xres;
+	display.fb_height = vinfo.yres;
+	display.fb_bytes = vinfo.bits_per_pixel / 8;
+	display.framebuffer = mmap(0, display.fb_width * display.fb_height * display.fb_bytes, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, 0);
 	wl_display_run(display.wl_display);
 	wl_display_destroy(display.wl_display);
 }
